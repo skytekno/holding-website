@@ -1,0 +1,89 @@
+name: sky-holding
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: skyholding
+      POSTGRES_USER: skyholding
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sky-local-development-only}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-54320}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skyholding -d skyholding"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ./api
+    environment:
+      APP_ENV: development
+      PORT: "8080"
+      DATABASE_URL: postgres://skyholding:${POSTGRES_PASSWORD:-sky-local-development-only}@postgres:5432/skyholding
+      DEV_AUTH_TOKEN: ${DEV_AUTH_TOKEN:-sky-holding-local-development-token-2026-only}
+      CORS_ORIGINS: http://localhost:${DASHBOARD_PORT:-3001},http://localhost:${WEB_PORT:-3000}
+      STORAGE_BACKEND: local
+      LOCAL_ASSET_PATH: /app/assets
+      ASSETS_BASE_URL: http://localhost:${API_PORT:-8080}/assets
+      RUST_LOG: info
+    ports:
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+    volumes:
+      - asset-data:/app/assets
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    environment:
+      PORT: "8080"
+      HOSTNAME: 0.0.0.0
+      API_URL: http://api:8080
+      SITE_URL: http://localhost:${WEB_PORT:-3000}
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: dashboard/Dockerfile
+    environment:
+      PORT: "8080"
+      HOSTNAME: 0.0.0.0
+      APP_ENV: development
+      API_URL: http://localhost:${API_PORT:-8080}
+      SITE_URL: http://localhost:${WEB_PORT:-3000}
+    ports:
+      - "127.0.0.1:${DASHBOARD_PORT:-3001}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  postgres-data:
+  asset-data:
