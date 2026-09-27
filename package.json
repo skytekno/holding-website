@@ -1,0 +1,29 @@
+{
+  "name": "sky-holding",
+  "private": true,
+  "workspaces": [
+    "web",
+    "dashboard"
+  ],
+  "engines": {
+    "node": ">=24 <27"
+  },
+  "scripts": {
+    "dev:web": "npm run dev --workspace @sky-holding/web",
+    "dev:dashboard": "npm run dev --workspace @sky-holding/dashboard",
+    "lint": "eslint web dashboard tests playwright.config.ts --max-warnings=0",
+    "typecheck": "npm run typecheck --workspaces && npm run typecheck:tests",
+    "build": "npm run build --workspaces",
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "test:e2e": "playwright test",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "typescript-eslint": "8.70.1",
+    "typescript": "^5.9.3",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.6",
+    "@types/node": "^24.0.0"
+  }
+}

@@ -1,0 +1,39 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+gha-creds-*.json
+
+# Build output
+node_modules/
+.next/
+out/
+target/
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+.artifacts/
+.tools/
+api/assets/
+api/var/
+
+# Terraform local state and input secrets
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+*.tfplan
+crash.log
+
+# Editor / OS
+.DS_Store
+.idea/
+*.log
+__pycache__/
+*.pyc

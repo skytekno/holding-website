@@ -1,0 +1,1 @@
+These RSA keys are generated test fixtures, publicly committed and never used by the running API. They test signature, algorithm, audience, issuer, and expiry rejection without network access. Google public keys are fetched from the fixed Google JWKS endpoint in production.

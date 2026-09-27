@@ -1,0 +1,22 @@
+# Run from the repository root. cloud_release.py supplies immutable release tags.
+steps:
+  - id: api
+    name: gcr.io/cloud-builders/docker
+    args: [build, --pull, -f, api/Dockerfile, -t, '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/api:${_TAG}', api]
+    waitFor: ['-']
+  - id: web
+    name: gcr.io/cloud-builders/docker
+    args: [build, --pull, -f, web/Dockerfile, -t, '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/web:${_TAG}', .]
+    waitFor: ['-']
+  - id: dashboard
+    name: gcr.io/cloud-builders/docker
+    args: [build, --pull, -f, dashboard/Dockerfile, -t, '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/dashboard:${_TAG}', .]
+    waitFor: ['-']
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/api:${_TAG}'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/web:${_TAG}'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/dashboard:${_TAG}'
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+timeout: 1800s
